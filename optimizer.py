@@ -3,7 +3,7 @@ from pyomo.environ import (
     NonNegativeReals, NonNegativeIntegers,
     SolverFactory, value, minimize
 )
-from pyomo.opt import SolverStatus
+from pyomo.opt import SolverStatus, TerminationCondition
 
 
 DEFAULT_PARAMS = {
@@ -87,12 +87,22 @@ def solve_app(demand: list, params: dict, model_type: str = "LP"):
     solver = SolverFactory('glpk')
     solver.options['tmlim'] = 300
     try:
-        res = solver.solve(m)
-    except Exception as e:
-        return None, f"Solver error: {e}"
+        res = solver.solve(m, load_solutions=True)
+    except Exception:
+        try:
+            solver = SolverFactory('highs')
+            res = solver.solve(m, load_solutions=True)
+        except Exception as e2:
+            return None, f"Solver error (glpk + highs 모두 실패): {e2}"
 
     if res.solver.status != SolverStatus.ok:
         return None, f"Solver status: {res.solver.status}"
+
+    if res.solver.termination_condition not in (
+        TerminationCondition.optimal,
+        TerminationCondition.feasible,
+    ):
+        return None, f"Solver termination: {res.solver.termination_condition}"
 
     def vals(var):
         return [value(var[t]) for t in TIME]
