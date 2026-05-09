@@ -100,7 +100,7 @@ k3.metric("부족재고 발생 월", f"{sum(1 for s in primary['S'] if s > 0)} �
 st.divider()
 
 # ── Chart 1: 월별 추이 ─────────────────────────────────────────────────────────
-st.subheader("월별 생산량 · 수요 · 재고 추이")
+st.subheader(f"월별 생산량 · 수요 · 재고 추이 ({primary['model_type']} 기준)")
 
 fig1 = go.Figure()
 fig1.add_trace(go.Scatter(x=months_labels, y=primary['D'], mode='lines+markers',
@@ -134,7 +134,7 @@ st.plotly_chart(fig2, use_container_width=True)
 st.divider()
 
 # ── Chart 3: 종업원 수 변화 ───────────────────────────────────────────────────
-st.subheader("월별 종업원 · 고용 · 해고 현황")
+st.subheader(f"월별 종업원 · 고용 · 해고 현황 ({primary['model_type']} 기준)")
 
 fig3 = go.Figure()
 fig3.add_trace(go.Bar(x=months_labels, y=primary['W'], name='종업원수(W)',
