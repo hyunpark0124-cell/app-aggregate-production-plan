@@ -33,6 +33,10 @@ def solve_app(demand: list, params: dict, model_type: str = "LP"):
     results_dict is None if infeasible or solver error.
     """
     TH = len(demand)
+    if TH == 0:
+        return None, "demand 리스트가 비어 있습니다."
+    if any(d < 0 for d in demand):
+        return None, "demand 값은 0 이상이어야 합니다."
     TIME = range(0, TH + 1)
     T = range(1, TH + 1)
     D = [0] + list(demand)
@@ -80,6 +84,7 @@ def solve_app(demand: list, params: dict, model_type: str = "LP"):
     m.final_S = Constraint(rule=lambda m: m.S[TH] == 0)
 
     solver = SolverFactory('glpk')
+    solver.options['tmlim'] = 300
     res = solver.solve(m)
 
     if res.solver.status != SolverStatus.ok:
