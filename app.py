@@ -99,5 +99,79 @@ k3.metric("부족재고 발생 월", f"{sum(1 for s in primary['S'] if s > 0)} �
 
 st.divider()
 
-# ── Charts placeholder (Tasks 5–8) ─────────────────────────────────────────────
-st.info("차트는 다음 단계에서 추가됩니다.")
+# ── Chart 1: 월별 추이 ─────────────────────────────────────────────────────────
+st.subheader("월별 생산량 · 수요 · 재고 추이")
+
+fig1 = go.Figure()
+fig1.add_trace(go.Scatter(x=months_labels, y=primary['D'], mode='lines+markers',
+                           name='수요(D)', line=dict(color='red', dash='dash')))
+fig1.add_trace(go.Scatter(x=months_labels, y=primary['P'], mode='lines+markers',
+                           name='생산량(P)', line=dict(color='blue')))
+fig1.add_trace(go.Scatter(x=months_labels, y=primary['I'], mode='lines+markers',
+                           name='재고(I)', line=dict(color='green')))
+fig1.add_trace(go.Scatter(x=months_labels, y=primary['S'], mode='lines+markers',
+                           name='부족재고(S)', line=dict(color='orange')))
+fig1.update_layout(xaxis_title="월", yaxis_title="수량 (개)",
+                   legend=dict(orientation="h"), height=400)
+st.plotly_chart(fig1, use_container_width=True)
+
+st.divider()
+
+# ── Chart 2: 비용 구성 ────────────────────────────────────────────────────────
+st.subheader("비용 구성 비율")
+
+breakdown = primary['cost_breakdown']
+nonzero = {k: v for k, v in breakdown.items() if v > 0}
+fig2 = go.Figure(go.Pie(
+    labels=list(nonzero.keys()),
+    values=list(nonzero.values()),
+    hole=0.35,
+    textinfo='label+percent',
+))
+fig2.update_layout(height=400)
+st.plotly_chart(fig2, use_container_width=True)
+
+st.divider()
+
+# ── Chart 3: 종업원 수 변화 ───────────────────────────────────────────────────
+st.subheader("월별 종업원 · 고용 · 해고 현황")
+
+fig3 = go.Figure()
+fig3.add_trace(go.Bar(x=months_labels, y=primary['W'], name='종업원수(W)',
+                       marker_color='steelblue'))
+fig3.add_trace(go.Bar(x=months_labels, y=primary['H'], name='신규고용(H)',
+                       marker_color='limegreen'))
+fig3.add_trace(go.Bar(x=months_labels, y=primary['L'], name='해고(L)',
+                       marker_color='tomato'))
+fig3.update_layout(barmode='group', xaxis_title="월", yaxis_title="인원 (명)",
+                   legend=dict(orientation="h"), height=400)
+st.plotly_chart(fig3, use_container_width=True)
+
+st.divider()
+
+# ── Chart 4: LP vs IP 비교표 ──────────────────────────────────────────────────
+st.subheader("LP vs IP 결과 비교")
+
+if lp and ip:
+    rows = []
+    keys = [('D','수요'), ('W','종업원(W)'), ('H','고용(H)'), ('L','해고(L)'),
+            ('P','생산(P)'), ('I','재고(I)'), ('S','부족재고(S)'),
+            ('C','하청(C)'), ('O','잔업(O)')]
+    for key, label_k in keys:
+        lp_vals = [f"{v:.1f}" for v in lp[key]]
+        ip_vals = [f"{v:.1f}" for v in ip[key]]
+        rows.append({'변수': label_k, '방식': 'LP'} | {f"{m}월": v for m, v in zip(primary['months'], lp_vals)})
+        rows.append({'변수': label_k, '방식': 'IP'} | {f"{m}월": v for m, v in zip(primary['months'], ip_vals)})
+
+    df_compare = pd.DataFrame(rows)
+    st.dataframe(df_compare.set_index(['변수', '방식']), use_container_width=True)
+
+    c1, c2 = st.columns(2)
+    c1.metric("LP 최소 총비용", f"{lp['total_cost']:,.0f} 천원")
+    c2.metric("IP 최소 총비용", f"{ip['total_cost']:,.0f} 천원",
+              delta=f"{ip['total_cost'] - lp['total_cost']:+.0f} 천원",
+              delta_color="inverse")
+elif lp:
+    st.info("IP 결과가 없습니다. 'LP + IP 비교' 모드로 실행하면 두 결과를 비교할 수 있습니다.")
+elif ip:
+    st.info("LP 결과가 없습니다. 'LP + IP 비교' 모드로 실행하면 두 결과를 비교할 수 있습니다.")
