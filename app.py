@@ -1,8 +1,14 @@
 import streamlit as st
 import plotly.graph_objects as go
-import plotly.express as px
 import pandas as pd
-from optimizer import solve_app, DEFAULT_PARAMS
+import traceback
+
+try:
+    from optimizer import solve_app, DEFAULT_PARAMS
+except Exception as _e:
+    st.error(f"optimizer 임포트 오류: {_e}")
+    st.code(traceback.format_exc())
+    st.stop()
 
 st.set_page_config(page_title="총괄생산계획 대시보드", layout="wide")
 st.title("원예장비 제조업체 총괄생산계획 (APP)")
@@ -23,23 +29,23 @@ with st.sidebar:
         demand.append(col.number_input(f"{i+1}월", min_value=0, value=v, step=100, key=f"d{i}"))
 
     st.subheader("비용 파라미터 (천원)")
-    cost_material        = st.number_input("재료비 (/개)", value=DEFAULT_PARAMS['cost_material'], step=1)
-    cost_inventory       = st.number_input("재고유지비 (/개/월)", value=DEFAULT_PARAMS['cost_inventory'], step=1)
-    cost_backlog         = st.number_input("부재고비용 (/개/월)", value=DEFAULT_PARAMS['cost_backlog'], step=1)
-    cost_outsource_extra = st.number_input("하청 추가비용 (/개)", value=DEFAULT_PARAMS['cost_outsource_extra'], step=1)
+    cost_material        = st.number_input("재료비 (/개)", min_value=1, value=int(DEFAULT_PARAMS['cost_material']), step=1)
+    cost_inventory       = st.number_input("재고유지비 (/개/월)", min_value=1, value=int(DEFAULT_PARAMS['cost_inventory']), step=1)
+    cost_backlog         = st.number_input("부재고비용 (/개/월)", min_value=1, value=int(DEFAULT_PARAMS['cost_backlog']), step=1)
+    cost_outsource_extra = st.number_input("하청 추가비용 (/개)", min_value=1, value=int(DEFAULT_PARAMS['cost_outsource_extra']), step=1)
 
     st.subheader("인력 파라미터")
-    W0            = st.number_input("초기 종업원 수 (명)", value=DEFAULT_PARAMS['W0'], step=1)
-    I0            = st.number_input("초기 재고 (개)", value=DEFAULT_PARAMS['I0'], step=100)
-    I_final       = st.number_input("최종 재고 목표 (개)", value=DEFAULT_PARAMS['I_final_min'], step=100)
-    wage_regular  = st.number_input("정규임금 (천원/시간)", value=DEFAULT_PARAMS['wage_regular'], step=1)
-    wage_overtime = st.number_input("초과근무임금 (천원/시간)", value=DEFAULT_PARAMS['wage_overtime'], step=1)
-    cost_hire     = st.number_input("고용비용 (천원/인)", value=DEFAULT_PARAMS['cost_hire'], step=10)
-    cost_fire     = st.number_input("해고비용 (천원/인)", value=DEFAULT_PARAMS['cost_fire'], step=10)
-    work_days     = st.number_input("작업일수 (일/월)", value=DEFAULT_PARAMS['work_days'], step=1)
-    work_hours    = st.number_input("작업시간 (시간/일)", value=DEFAULT_PARAMS['work_hours'], step=1)
-    overtime_limit = st.number_input("초과시간 제한 (시간/인/월)", value=DEFAULT_PARAMS['overtime_limit'], step=1)
-    std_time      = st.number_input("작업표준시간 (시간/개)", value=DEFAULT_PARAMS['std_time'], step=1)
+    W0            = st.number_input("초기 종업원 수 (명)", min_value=1, value=int(DEFAULT_PARAMS['W0']), step=1)
+    I0            = st.number_input("초기 재고 (개)", min_value=0, value=int(DEFAULT_PARAMS['I0']), step=100)
+    I_final       = st.number_input("최종 재고 목표 (개)", min_value=0, value=int(DEFAULT_PARAMS['I_final_min']), step=100)
+    wage_regular  = st.number_input("정규임금 (천원/시간)", min_value=1, value=int(DEFAULT_PARAMS['wage_regular']), step=1)
+    wage_overtime = st.number_input("초과근무임금 (천원/시간)", min_value=1, value=int(DEFAULT_PARAMS['wage_overtime']), step=1)
+    cost_hire     = st.number_input("고용비용 (천원/인)", min_value=0, value=int(DEFAULT_PARAMS['cost_hire']), step=10)
+    cost_fire     = st.number_input("해고비용 (천원/인)", min_value=0, value=int(DEFAULT_PARAMS['cost_fire']), step=10)
+    work_days     = st.number_input("작업일수 (일/월)", min_value=1, value=int(DEFAULT_PARAMS['work_days']), step=1)
+    work_hours    = st.number_input("작업시간 (시간/일)", min_value=1, value=int(DEFAULT_PARAMS['work_hours']), step=1)
+    overtime_limit = st.number_input("초과시간 제한 (시간/인/월)", min_value=0, value=int(DEFAULT_PARAMS['overtime_limit']), step=1)
+    std_time      = st.number_input("작업표준시간 (시간/개)", min_value=1, value=int(DEFAULT_PARAMS['std_time']), step=1)
 
     st.subheader("최적화 방식")
     mode = st.radio("방식 선택", ["LP + IP 비교", "LP만", "IP만"], index=0)
