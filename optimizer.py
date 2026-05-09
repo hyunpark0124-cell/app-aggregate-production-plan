@@ -85,7 +85,10 @@ def solve_app(demand: list, params: dict, model_type: str = "LP"):
 
     solver = SolverFactory('glpk')
     solver.options['tmlim'] = 300
-    res = solver.solve(m)
+    try:
+        res = solver.solve(m)
+    except Exception as e:
+        return None, f"Solver error: {e}"
 
     if res.solver.status != SolverStatus.ok:
         return None, f"Solver status: {res.solver.status}"
