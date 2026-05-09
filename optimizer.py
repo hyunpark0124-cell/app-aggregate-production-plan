@@ -1,8 +1,9 @@
 from pyomo.environ import (
     ConcreteModel, Var, Objective, Constraint,
     NonNegativeReals, NonNegativeIntegers,
-    SolverFactory, value, minimize, SolverStatus
+    SolverFactory, value, minimize
 )
+from pyomo.opt import SolverStatus
 
 
 DEFAULT_PARAMS = {
