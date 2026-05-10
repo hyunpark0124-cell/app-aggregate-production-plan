@@ -12,7 +12,7 @@ except Exception as _e:
 
 st.set_page_config(page_title="총괄생산계획 대시보드", layout="wide")
 st.title("원예장비 제조업체 총괄생산계획 (APP)")
-st.caption("Pyomo + GLPK 최적화 | Streamlit 대시보드")
+st.caption("PuLP + CBC 최적화 | Streamlit 대시보드")
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
