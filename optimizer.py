@@ -105,7 +105,13 @@ def solve_app(demand: list, params: dict, model_type: str = "LP"):
         return None, f"Solver termination: {res.solver.termination_condition}"
 
     def vals(var):
-        return [value(var[t]) for t in TIME]
+        result = []
+        for t in TIME:
+            try:
+                result.append(value(var[t]))
+            except ValueError:
+                result.append(0.0)
+        return result
 
     W = vals(m.W)
     H = vals(m.H)
